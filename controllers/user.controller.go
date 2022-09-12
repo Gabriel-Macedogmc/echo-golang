@@ -3,29 +3,44 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Gabriel-Macedogmc/echo-golang/database"
-	"github.com/Gabriel-Macedogmc/echo-golang/database/repositories"
+	"github.com/Gabriel-Macedogmc/echo-golang/configs"
 	"github.com/Gabriel-Macedogmc/echo-golang/models"
+	"github.com/Gabriel-Macedogmc/echo-golang/useCases"
 	"github.com/labstack/echo/v4"
 )
 
-func Create(c echo.Context) error {
+type UserController interface {
+	Create(c echo.Context) error
+	GetAll(c echo.Context) error
+}
+
+type userController struct {
+	userService useCases.UserService
+}
+
+func NewUserController(u useCases.UserService) UserController {
+	return userController{
+		userService: u,
+	}
+}
+
+func (u userController) Create(c echo.Context) error {
 	user := models.User{}
 
 	c.Bind(&user)
 
-	//database.Instance.Create(&user)
+	userCreated, err := u.userService.Save(user)
 
-	//useCases.CreateUserService(user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
 
-	repositories.Create(user)
-
-	return c.JSON(http.StatusCreated, user)
+	return c.JSON(http.StatusCreated, userCreated)
 }
 
-func GetAll(c echo.Context) error {
+func (u userController) GetAll(c echo.Context) error {
 	users := []models.User{}
-	database.Instance.Find(&users)
+	configs.Instance.Find(&users)
 
 	return c.JSON(http.StatusOK, users)
 }

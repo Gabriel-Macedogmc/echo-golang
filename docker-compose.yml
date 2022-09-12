@@ -11,9 +11,11 @@ services:
     volumes:
       - ./:/app
     restart: always
+    depends_on:
+      - postgres-db-golang
 
-  postgres-db:
-    container_name: postgres-db
+  postgres-db-golang:
+    container_name: postgres-db-golang
     image: postgres
     environment:
       POSTGRES_USER: postgres
